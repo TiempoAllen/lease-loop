@@ -1,12 +1,10 @@
-import React from "react";
+import React, { Suspense } from "react";
 import Header from "./Header";
 import ProductCard from "../cards/ProductCard";
-import { PrismaClient } from "../../../src/app/generated/prisma";
-
-const prisma = new PrismaClient();
+import ProductCardSkeleton from "../skeletons/ProductCardSkeleton";
+import ProductsGrid from "./ProductsGrid";
 
 const ProductsList: React.FC<{ isHome: boolean }> = async (props) => {
-  const products = await prisma.product.findMany();
   const headerContents = {
     h1: "Products List",
     h3: "Explore all products we offer to rent from around the world",
@@ -22,11 +20,17 @@ const ProductsList: React.FC<{ isHome: boolean }> = async (props) => {
         h3={headerContents.h3}
         isHome={props.isHome}
       />
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 my-4">
-        {products.map((product) => (
-          <ProductCard product={product} key={product.id} />
-        ))}
-      </div>
+      <Suspense
+        fallback={
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 my-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+          </div>
+        }
+      >
+        <ProductsGrid />
+      </Suspense>
     </section>
   );
 };
